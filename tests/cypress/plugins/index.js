@@ -6,6 +6,9 @@
 
 const { imageGenerator } = require('../plugins/imageGenerator/addPlugin');
 const { createZipArchive } = require('../plugins/createZipArchive/addPlugin');
+const path = require('path');
+const downloadDirectory = path.join(__dirname, '..', 'fixtures');
+
 module.exports = (on, config) => {
     require('@cypress/code-coverage/task')(on, config);
     on('task', { imageGenerator });
@@ -19,8 +22,12 @@ module.exports = (on, config) => {
     // Try to resolve "Cypress failed to make a connection to the Chrome DevTools Protocol"
     // https://github.com/cypress-io/cypress/issues/7450
     on('before:browser:launch', (browser, launchOptions) => {
-        if (browser.name === 'chrome' && browser.isHeadless) {
-            launchOptions.args.push('--disable-gpu');
+        if (browser.name === 'chrome') {
+            // change download directory
+            launchOptions.preferences.default['download'] = { default_directory: downloadDirectory };
+            if (browser.isHeadless) {
+                launchOptions.args.push('--disable-gpu');
+            }
             return launchOptions;
         }
     });
